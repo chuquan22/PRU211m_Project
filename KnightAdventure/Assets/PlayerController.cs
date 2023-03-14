@@ -1,68 +1,115 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
-using UnityEditor.Tilemaps;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class playerController : MonoBehaviour
 {
-    public Animator animator;
-    public float maxSpeed;
-    public float jumpHeight;
-    Rigidbody2D mybody;
+    [SerializeField] float m_speed = 4.0f;
+    private Animator m_animator;
+    private Rigidbody2D m_body2d;
 
-    bool facingRight;
-    bool grounded;
+    public Transform attackPoint;
+    public float attackRange = 0.5f;
+    public LayerMask enemyLayers;
+
+    public static int maxHealth = 100;
+    
+    int currentHeath;
+
+
+    public int attackDamage = 20;
 
     // Start is called before the first frame update
     void Start()
     {
-        mybody = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-
-        facingRight = true;
+        m_animator = GetComponent<Animator>();
+        m_body2d = GetComponent<Rigidbody2D>();
+        currentHeath = maxHealth;
+        BotController.OnBotDeath += increaseExp;
     }
+
+    public void increaseExp()
+    {
+       
+    }
+
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
-        float move = Input.GetAxis("Horizontal");
-        animator.SetFloat("speed", Mathf.Abs(move));
-        mybody.velocity = new Vector2 (move * maxSpeed, mybody.velocity.y);
-        if(move > 0 && !facingRight)
+
+        // -- Handle input and movement --
+        float inputX = Input.GetAxis("Horizontal");
+
+        // Swap direction of sprite depending on walk direction
+        if (inputX > 0)
         {
-            flip();
-        } else if(move < 0 && facingRight)
+            transform.localScale = new Vector3(5.0f, 5.0f, 1.0f);
+            m_animator.SetInteger("speed", 1);
+        }
+        else if (inputX < 0)
         {
-            flip();
+            transform.localScale = new Vector3(-5.0f, 5.0f, 1.0f);
+            m_animator.SetInteger("speed", 1);
+        }
+        else
+        {
+            m_animator.SetInteger("speed", 0);
         }
 
-        if (Input.GetKey(KeyCode.Space))
+        // Move
+        m_body2d.velocity = new Vector2(inputX * m_speed, m_body2d.velocity.y);
+
+        // enter mouse left to hero attack 
+        if (Input.GetMouseButtonDown(0))
         {
-            if (grounded)
-            {
-                grounded = false;
-                animator.SetTrigger("isJumping");
-                mybody.velocity = new Vector2(mybody.velocity.x, jumpHeight);
+            heroAttack();
+        }
+    }
 
-            }
+    private void heroAttack()
+    {
+        // set animation attack
+        m_animator.SetTrigger("attack");
 
+        // detack enermy in range of attack
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
+
+        //Damage
+        foreach (Collider2D enemy in hitEnemies)
+        {
+            enemy.GetComponent<BotController>().TakeDamage(attackDamage);
         }
 
     }
 
-    void flip()
+    private void OnDrawGizmosSelected()
     {
-        facingRight = !facingRight;
-        Vector3 theScale = transform.localScale;
-        theScale.x *= -1;
-        transform.localScale = theScale;    
+        if (attackPoint == null) return;
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
     }
-    private void OnCollisionEnter2D(Collision2D other)
+
+    public void TakeDamage(int damage)
     {
-        if (other.gameObject.tag == "Ground")
+        currentHeath -= damage;
+        
+        Debug.Log("HP hero:" + currentHeath);
+
+        if (currentHeath <= 0)
         {
-            grounded = true;
+            Die();
         }
+
     }
+
+    public void Die()
+    {
+       
+        GameObject.Destroy(this.gameObject);
+        Debug.Log("die");
+    }
+
+
+
+
 }
