@@ -17,7 +17,9 @@ public class playerController : MonoBehaviour
     int currentHeath;
 
 
-    public int attackDamage = 20;
+    public static int attackDamage = 20;
+    private bool grounded = false;
+    public int jumpHeight = 15;
 
     // Start is called before the first frame update
     void Start()
@@ -65,6 +67,17 @@ public class playerController : MonoBehaviour
         {
             heroAttack();
         }
+
+        if (Input.GetKey(KeyCode.Space))
+        {
+            if (grounded)
+            {
+                grounded = false;
+                m_body2d.velocity = new Vector2(m_body2d.velocity.x, jumpHeight);
+                m_animator.SetTrigger("isJumping");
+            }
+
+        }
     }
 
     private void heroAttack()
@@ -83,16 +96,12 @@ public class playerController : MonoBehaviour
 
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        if (attackPoint == null) return;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
-    }
+    
 
     public void TakeDamage(int damage)
     {
         currentHeath -= damage;
-        
+        HealthBar.SettingHealth(currentHeath);
         Debug.Log("HP hero:" + currentHeath);
 
         if (currentHeath <= 0)
@@ -109,7 +118,18 @@ public class playerController : MonoBehaviour
         Debug.Log("die");
     }
 
-
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.tag == "Ground")
+        {
+            grounded = true;
+        }
+        if (other.gameObject.tag == "Heart")
+        {
+            HealthBar.Heart();
+            GameObject gameObject = GameObject.Find("Heart");
+        }
+    }
 
 
 }

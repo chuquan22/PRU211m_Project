@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+<<<<<<<< HEAD:KnightAdventure/Assets/Animations/Player/player_idle.anim.meta
+guid: cb2aaffe354b93344bf8e0b0e8d8ffb8
+========
+guid: b620437e196348c4db5c2de793c7ddbe
+>>>>>>>> c6b379612e6b9462b69f43bccbb3e84271f905ac:KnightAdventure/Assets/Animations/Player/AttackD.anim.meta
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
